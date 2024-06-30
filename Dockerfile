@@ -7,10 +7,14 @@ ARG VERSION
 ARG RELEASE="1"
 
 # Update image
-RUN microdnf update -y && microdnf clean all && mkdir /stackable
+RUN microdnf update -y && microdnf install -y tar && microdnf clean all && mkdir /stackable
 
-COPY --from=builder /app/csaf_publisher  /
+RUN curl -LO https://github.com/csaf-poc/csaf_distribution/releases/download/v3.0.0/csaf_distribution-v3.0.0-gnulinux-amd64.tar.gz && \
+    tar xvfz csaf_distribution-v3.0.0-gnulinux-amd64.tar.gz -C /stackable && \
+    rm csaf_distribution-v3.0.0-gnulinux-amd64.tar.gz
+
+COPY --from=builder /app/csaf_publisher /stackable
 
 WORKDIR /stackable
 
-ENTRYPOINT ["/csaf_publisher"]
+ENTRYPOINT ["/stackable/csaf_publisher"]
